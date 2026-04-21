@@ -1,0 +1,36 @@
+server:
+  port: 8089
+
+spring:
+  security:
+    user:
+      name: admin
+      password: 123456
+  datasource:
+    url: jdbc:mysql://localhost:3306/shopping_mall?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.weep.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT Configuration
+jwt:
+  # JWT secret key (use environment variable in production)
+  secret: MySecretKeyForJWTTokenGenerationAndValidation2024SecureKey
+  # Token expiration time in milliseconds (default 24 hours)
+  expiration: 86400000
+  # Token prefix
+  token-prefix: 'Bearer '
+  # Header name
+  header: Authorization
