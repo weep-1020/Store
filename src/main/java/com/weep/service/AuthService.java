@@ -2,14 +2,12 @@ package com.weep.service;
 
 import com.weep.dto.LoginRequest;
 import com.weep.dto.LoginResponse;
+import com.weep.entity.User;
 import com.weep.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 认证服务类
@@ -21,7 +19,7 @@ import java.util.Map;
  * </p>
  *
  * @author Store Team
- * @version 2.0
+ * @version 3.0
  */
 @Service
 public class AuthService {
@@ -35,16 +33,10 @@ public class AuthService {
     private JwtUtil jwtUtil;
 
     /**
-     * 模拟用户数据库（实际项目中应该从数据库查询）
+     * 用户服务类
      */
-    private static final Map<String, String> USER_DATABASE = new HashMap<>();
-
-    static {
-        // 初始化测试用户（密码应该是加密存储的）
-        USER_DATABASE.put("admin", "123456");
-        USER_DATABASE.put("user", "password");
-        USER_DATABASE.put("test", "test123");
-    }
+    @Autowired
+    private UserService userService;
 
     /**
      * 用户登录
@@ -65,17 +57,11 @@ public class AuthService {
             return LoginResponse.fail("用户名和密码不能为空");
         }
 
-        // 验证用户是否存在
-        String storedPassword = USER_DATABASE.get(username);
-        if (storedPassword == null) {
-            logger.warn("登录失败：用户不存在 - {}", username);
-            return LoginResponse.fail("用户不存在");
-        }
-
-        // 验证密码（实际项目中应该使用 BCrypt 等加密算法比对）
-        if (!storedPassword.equals(password)) {
-            logger.warn("登录失败：密码错误 - {}", username);
-            return LoginResponse.fail("密码错误");
+        // 通过 UserService 验证用户登录
+        User user = userService.login(username, password);
+        
+        if (user == null) {
+            return LoginResponse.fail("用户名或密码错误");
         }
 
         // 生成 JWT Token

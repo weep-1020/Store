@@ -1,5 +1,7 @@
 package com.weep.entity;
 
+import java.time.LocalDateTime;
+
 /**
  * 用户实体类
  * <p>
@@ -37,6 +39,16 @@ public class User {
     private String phone;
 
     /**
+     * 用户状态（1-启用，0-禁用）
+     */
+    private Integer status;
+
+    /**
+     * 创建时间
+     */
+    private LocalDateTime createdAt;
+
+    /**
      * 默认构造函数
      */
     public User() {
@@ -45,18 +57,22 @@ public class User {
     /**
      * 带参数的构造函数
      *
-     * @param id       用户ID
-     * @param username 用户名
-     * @param password 密码
-     * @param email    邮箱
-     * @param phone    手机号
+     * @param id        用户ID
+     * @param username  用户名
+     * @param password  密码
+     * @param email     邮箱
+     * @param phone     手机号
+     * @param status    用户状态
+     * @param createdAt 创建时间
      */
-    public User(Long id, String username, String password, String email, String phone) {
+    public User(Long id, String username, String password, String email, String phone, Integer status, LocalDateTime createdAt) {
         this.id = id;
         this.username = username;
         this.password = password;
         this.email = email;
         this.phone = phone;
+        this.status = status;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -99,6 +115,22 @@ public class User {
         this.phone = phone;
     }
 
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -106,6 +138,8 @@ public class User {
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
+                ", status=" + status +
+                ", createdAt=" + createdAt +
                 '}';
     }
 }

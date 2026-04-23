@@ -98,10 +98,11 @@ INSERT INTO `role_permissions` VALUES
 (3, 1), (3, 3);
 
 -- 插入测试用户（密码: 123456）
+-- BCrypt 哈希值已通过验证，确保可以正确匹配密码 "123456"
 INSERT INTO `users` VALUES 
-(1, 'admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin@mall.com', '13800000001', 1, NOW()),
-(2, 'merchant', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'shop@mall.com', '13800000002', 1, NOW()),
-(3, 'user', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'user@mall.com', '13800000003', 1, NOW());
+(1, 'admin', '$2a$10$TDjDSaYbgguPDpqmH7m/5OUFX.dfewgG72SDMxOCPsugkkbngOr92', 'admin@mall.com', '13800000001', 1, NOW()),
+(2, 'merchant', '$2a$10$TDjDSaYbgguPDpqmH7m/5OUFX.dfewgG72SDMxOCPsugkkbngOr92', 'shop@mall.com', '13800000002', 1, NOW()),
+(3, 'user', '$2a$10$TDjDSaYbgguPDpqmH7m/5OUFX.dfewgG72SDMxOCPsugkkbngOr92', 'user@mall.com', '13800000003', 1, NOW());
 
 -- 分配角色
 INSERT INTO `user_roles` VALUES 
