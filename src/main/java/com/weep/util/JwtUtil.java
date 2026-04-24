@@ -10,8 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -57,6 +60,25 @@ public class JwtUtil {
      */
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
+        return createToken(claims, username);
+    }
+
+    /**
+     * 生成 JWT Token（带角色和权限）
+     *
+     * @param username    用户名
+     * @param roles       角色列表
+     * @param permissions 权限列表
+     * @return JWT Token 字符串
+     */
+    public String generateTokenWithRoles(String username, List<String> roles, List<String> permissions) {
+        Map<String, Object> claims = new HashMap<>();
+        if (roles != null && !roles.isEmpty()) {
+            claims.put("roles", String.join(",", roles));
+        }
+        if (permissions != null && !permissions.isEmpty()) {
+            claims.put("permissions", String.join(",", permissions));
+        }
         return createToken(claims, username);
     }
 
@@ -107,6 +129,44 @@ public class JwtUtil {
     public String getUsernameFromToken(String token) {
         DecodedJWT jwt = decodeToken(token);
         return jwt.getSubject();
+    }
+
+    /**
+     * 从 Token 中获取角色列表
+     *
+     * @param token JWT Token
+     * @return 角色代码列表
+     */
+    public List<String> getRolesFromToken(String token) {
+        try {
+            DecodedJWT jwt = decodeToken(token);
+            String rolesStr = jwt.getClaim("roles").asString();
+            if (rolesStr != null && !rolesStr.isEmpty()) {
+                return Arrays.asList(rolesStr.split(","));
+            }
+        } catch (Exception e) {
+            logger.warn("从 Token 中获取角色失败: {}", e.getMessage());
+        }
+        return new ArrayList<>();
+    }
+
+    /**
+     * 从 Token 中获取权限列表
+     *
+     * @param token JWT Token
+     * @return 权限代码列表
+     */
+    public List<String> getPermissionsFromToken(String token) {
+        try {
+            DecodedJWT jwt = decodeToken(token);
+            String permissionsStr = jwt.getClaim("permissions").asString();
+            if (permissionsStr != null && !permissionsStr.isEmpty()) {
+                return Arrays.asList(permissionsStr.split(","));
+            }
+        } catch (Exception e) {
+            logger.warn("从 Token 中获取权限失败: {}", e.getMessage());
+        }
+        return new ArrayList<>();
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.weep.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 用户实体类
@@ -47,6 +48,16 @@ public class User {
      * 创建时间
      */
     private LocalDateTime createdAt;
+
+    /**
+     * 用户角色列表（非数据库字段）
+     */
+    private List<String> roles;
+
+    /**
+     * 用户权限列表（非数据库字段）
+     */
+    private List<String> permissions;
 
     /**
      * 默认构造函数
@@ -129,6 +140,22 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
+    public List<String> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(List<String> permissions) {
+        this.permissions = permissions;
     }
 
     @Override

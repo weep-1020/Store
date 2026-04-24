@@ -22,13 +22,16 @@ import java.util.List;
  * - 对未提供令牌或令牌无效的请求返回相应的错误响应
  * </p>
  * <p>
+ * 注意：具体的角色和权限检查由 PermissionInterceptor 处理
+ * </p>
+ * <p>
  * 支持的认证方式：Bearer JWT Token
- * 公开路径：/hello, /api/auth/login, /api/auth/register
- * 受保护路径：/api/*（除登录接口外）, /query
+ * 公开路径：/hello, /api/auth/login, /api/auth/register, /api/test/public
+ * 受保护路径：/api/*（除公开接口外）, /query
  * </p>
  *
  * @author Store Team
- * @version 2.0
+ * @version 3.0
  */
 @Component
 public class AuthenticationFilter implements Filter {
@@ -51,7 +54,8 @@ public class AuthenticationFilter implements Filter {
     private static final List<String> PUBLIC_PATHS = Arrays.asList(
             "/hello",
             "/api/auth/login",
-            "/api/auth/register"
+            "/api/auth/register",
+            "/api/test/public"
     );
 
     /**

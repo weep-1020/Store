@@ -1,5 +1,7 @@
 package com.weep.controller;
 
+import com.weep.annotation.RequirePermission;
+import com.weep.annotation.RequireRole;
 import com.weep.entity.User;
 import com.weep.service.UserService;
 import org.slf4j.Logger;
@@ -36,6 +38,7 @@ public class UserController {
      * 获取当前用户信息
      * <p>
      * 该接口需要携带有效的 Token 才能访问
+     * 任何已认证的用户都可以访问
      * </p>
      *
      * @return 用户信息
@@ -77,12 +80,14 @@ public class UserController {
     /**
      * 获取用户列表
      * <p>
-     * 该接口需要携带有效的 Token 才能访问
+     * 该接口需要 SUPER_ADMIN 角色或 user:manage 权限
      * </p>
      *
      * @return 用户列表
      */
     @GetMapping("/list")
+    @RequireRole({"SUPER_ADMIN"})
+    @RequirePermission(value = {"user:manage"}, logical = RequirePermission.Logical.OR)
     public Map<String, Object> getUserList() {
         Map<String, Object> result = new HashMap<>();
         
@@ -110,13 +115,14 @@ public class UserController {
     /**
      * 根据ID获取用户信息
      * <p>
-     * 该接口需要携带有效的 Token 才能访问
+     * 该接口需要 SUPER_ADMIN 或 MERCHANT 角色
      * </p>
      *
      * @param id 用户ID
      * @return 用户信息
      */
     @GetMapping("/{id}")
+    @RequireRole({"SUPER_ADMIN", "MERCHANT"})
     public Map<String, Object> getUserById(@PathVariable Long id) {
         Map<String, Object> result = new HashMap<>();
         

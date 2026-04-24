@@ -3,6 +3,8 @@ package com.weep.service;
 import com.weep.dto.LoginRequest;
 import com.weep.dto.LoginResponse;
 import com.weep.entity.User;
+import com.weep.mapper.PermissionMapper;
+import com.weep.mapper.RoleMapper;
 import com.weep.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +41,18 @@ public class AuthService {
     private UserService userService;
 
     /**
+     * 角色 Mapper
+     */
+    @Autowired
+    private RoleMapper roleMapper;
+
+    /**
+     * 权限 Mapper
+     */
+    @Autowired
+    private PermissionMapper permissionMapper;
+
+    /**
      * 用户登录
      * <p>
      * 验证用户名和密码，如果验证成功则生成并返回 Token
@@ -64,8 +78,14 @@ public class AuthService {
             return LoginResponse.fail("用户名或密码错误");
         }
 
-        // 生成 JWT Token
-        String token = jwtUtil.generateToken(username);
+        // 查询用户的角色和权限
+        java.util.List<String> roles = roleMapper.findRoleCodesByUsername(username);
+        java.util.List<String> permissions = permissionMapper.findPermissionCodesByUsername(username);
+        
+        logger.info("用户 {} 的角色: {}, 权限: {}", username, roles, permissions);
+
+        // 生成包含角色和权限的 JWT Token
+        String token = jwtUtil.generateTokenWithRoles(username, roles, permissions);
 
         logger.info("用户登录成功 - {}", username);
         return LoginResponse.success(token, username);
