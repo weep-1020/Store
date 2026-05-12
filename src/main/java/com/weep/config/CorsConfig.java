@@ -44,16 +44,16 @@ public class CorsConfig {
         CorsConfiguration config = new CorsConfiguration();
         
         // 允许所有源域名（生产环境应该改为具体的域名，如：http://localhost:3000）
-        config.addAllowedOriginPattern("*");
+        config.addAllowedOriginPattern("http://localhost:8089/*");
         
         // 允许携带认证信息（Cookie、Authorization Header 等）
         config.setAllowCredentials(true);
         
         // 允许所有请求头
-        config.addAllowedHeader("*");
+        config.addAllowedHeader("http://localhost:8089/*");
         
         // 允许所有 HTTP 方法
-        config.addAllowedMethod("*");
+        config.addAllowedMethod("http://localhost:8089/*");
         
         // 暴露响应头，让前端可以访问自定义响应头
         config.addExposedHeader("Authorization");

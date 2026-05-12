@@ -2,10 +2,10 @@ server:
   port: 8089
 
 spring:
-  security:
-    user:
-      name: admin
-      password: 123456
+#  security:
+#    user:
+#      name: admin
+#      password: 123456
   datasource:
     url: jdbc:mysql://localhost:3306/mall_db?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
     username: root

@@ -4,6 +4,8 @@ import com.weep.annotation.RequirePermission;
 import com.weep.annotation.RequireRole;
 import com.weep.entity.User;
 import com.weep.service.UserService;
+import com.weep.util.JwtUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +37,12 @@ public class UserController {
     private UserService userService;
 
     /**
+     * JWT 工具类
+     */
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    /**
      * 获取当前用户信息
      * <p>
      * 该接口需要携带有效的 Token 才能访问
@@ -44,12 +52,29 @@ public class UserController {
      * @return 用户信息
      */
     @GetMapping("/info")
-    public Map<String, Object> getUserInfo() {
+    public Map<String, Object> getUserInfo(HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         
         try {
-//              从 Token 中获取当前用户ID，这里暂时返回模拟数据
-            User user = userService.findById(1L);
+            // 1. 从请求头获取 Token
+            String authorization = request.getHeader("Authorization");
+            String username = null;
+
+            if (authorization != null && authorization.startsWith("Bearer ")) {
+                String token = authorization.substring(7);
+                // 2. 解析 Token 获取用户名
+                username = jwtUtil.getUsernameFromToken(token);
+            }
+
+            if (username == null) {
+                result.put("code", 401);
+                result.put("message", "未提供有效的认证令牌");
+                return result;
+            }
+
+            // 3. 根据用户名查询用户信息
+            User user = userService.findByUsername(username);
+            logger.debug("获取用户信息: {}", user);
             
             if (user != null) {
                 result.put("code", 200);
@@ -89,6 +114,7 @@ public class UserController {
     @RequireRole({"SUPER_ADMIN"})
     @RequirePermission(value = {"user:manage"}, logical = RequirePermission.Logical.OR)
     public Map<String, Object> getUserList() {
+        logger.debug("正在访问管理员权限资源");
         Map<String, Object> result = new HashMap<>();
         
         try {
@@ -125,7 +151,7 @@ public class UserController {
     @RequireRole({"SUPER_ADMIN", "MERCHANT"})
     public Map<String, Object> getUserById(@PathVariable Long id) {
         Map<String, Object> result = new HashMap<>();
-        
+        logger.debug("正在访问管理员和商家权限资源");
         try {
             User user = userService.findById(id);
             
