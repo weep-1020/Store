@@ -53,8 +53,9 @@ public class AuthenticationFilter implements Filter {
      */
     private static final List<String> PUBLIC_PATHS = Arrays.asList(
             "/hello",
-            "/api/auth/login",
-            "/api/auth/register",
+            "/api/user/login",      // 用户登录（公开）
+            "/api/user/register",   // 用户注册（公开）
+            "/api/auth/validate",   // Token验证（公开）
             "/api/test/public"
     );
 

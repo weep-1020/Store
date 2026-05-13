@@ -66,6 +66,23 @@ CREATE TABLE `role_permissions` (
     CONSTRAINT `fk_rp_permission` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='角色权限关联';
 
+-- 6. 商品分类表
+DROP TABLE IF EXISTS `categories`;
+CREATE TABLE `categories` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `category_name` VARCHAR(100) NOT NULL,
+    `parent_id` BIGINT UNSIGNED DEFAULT 0,
+    `description` VARCHAR(500),
+    `icon_url` VARCHAR(255),
+    `sort_order` INT DEFAULT 0,
+    `status` TINYINT DEFAULT 1,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_parent_id` (`parent_id`),
+    KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='商品分类表';
+
 -- ============================================
 -- 初始化数据
 -- ============================================
@@ -109,5 +126,15 @@ INSERT INTO `user_roles` VALUES
 (1, 1),
 (2, 2),
 (3, 3);
+
+-- 插入商品分类示例数据
+INSERT INTO `categories` (`category_name`, `parent_id`, `description`, `icon_url`, `sort_order`, `status`) VALUES 
+('电子产品', 0, '各类电子产品', '/icons/electronics.png', 1, 1),
+('服装', 0, '男女服装', '/icons/clothing.png', 2, 1),
+('家居', 0, '家居用品', '/icons/home.png', 3, 1),
+('手机', 1, '智能手机', '/icons/phone.png', 1, 1),
+('电脑', 1, '笔记本电脑和台式机', '/icons/computer.png', 2, 1),
+('男装', 2, '男士服装', '/icons/men.png', 1, 1),
+('女装', 2, '女士服装', '/icons/women.png', 2, 1);
 
 SELECT '数据库创建完成！' AS message;

@@ -5,6 +5,7 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.weep.entity.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,20 +67,34 @@ public class JwtUtil {
     /**
      * 生成 JWT Token（带角色和权限）
      *
-     * @param username    用户名
+     * @param user        用户对象
      * @param roles       角色列表
      * @param permissions 权限列表
      * @return JWT Token 字符串
      */
-    public String generateTokenWithRoles(String username, List<String> roles, List<String> permissions) {
+    public String generateTokenWithUserDetails(User user, List<String> roles, List<String> permissions) {
+        // 构建包含用户详细信息、角色和权限的自定义声明
         Map<String, Object> claims = new HashMap<>();
+        
+        // 添加用户基本信息到声明中
+        claims.put("userId", user.getId());
+        claims.put("username", user.getUsername());
+        claims.put("email", user.getEmail() != null ? user.getEmail() : "");
+        claims.put("phone", user.getPhone() != null ? user.getPhone() : "");
+        claims.put("status", user.getStatus());
+        claims.put("createdAt", user.getCreatedAt() != null ? user.getCreatedAt().toString() : "");
+        
+        // 将角色列表转换为逗号分隔的字符串并添加到声明中
         if (roles != null && !roles.isEmpty()) {
             claims.put("roles", String.join(",", roles));
         }
+        
+        // 将权限列表转换为逗号分隔的字符串并添加到声明中
         if (permissions != null && !permissions.isEmpty()) {
             claims.put("permissions", String.join(",", permissions));
         }
-        return createToken(claims, username);
+        
+        return createToken(claims, user.getUsername());
     }
 
     /**
@@ -167,6 +182,86 @@ public class JwtUtil {
             logger.warn("从 Token 中获取权限失败: {}", e.getMessage());
         }
         return new ArrayList<>();
+    }
+
+    /**
+     * 从 Token 中获取用户ID
+     *
+     * @param token JWT Token
+     * @return 用户ID
+     */
+    public Long getUserIdFromToken(String token) {
+        try {
+            DecodedJWT jwt = decodeToken(token);
+            return jwt.getClaim("userId").asLong();
+        } catch (Exception e) {
+            logger.warn("从 Token 中获取用户ID失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 从 Token 中获取邮箱
+     *
+     * @param token JWT Token
+     * @return 邮箱
+     */
+    public String getEmailFromToken(String token) {
+        try {
+            DecodedJWT jwt = decodeToken(token);
+            return jwt.getClaim("email").asString();
+        } catch (Exception e) {
+            logger.warn("从 Token 中获取邮箱失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 从 Token 中获取手机号
+     *
+     * @param token JWT Token
+     * @return 手机号
+     */
+    public String getPhoneFromToken(String token) {
+        try {
+            DecodedJWT jwt = decodeToken(token);
+            return jwt.getClaim("phone").asString();
+        } catch (Exception e) {
+            logger.warn("从 Token 中获取手机号失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 从 Token 中获取用户状态
+     *
+     * @param token JWT Token
+     * @return 用户状态
+     */
+    public Integer getStatusFromToken(String token) {
+        try {
+            DecodedJWT jwt = decodeToken(token);
+            return jwt.getClaim("status").asInt();
+        } catch (Exception e) {
+            logger.warn("从 Token 中获取用户状态失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 从 Token 中获取创建时间
+     *
+     * @param token JWT Token
+     * @return 创建时间字符串
+     */
+    public String getCreatedAtFromToken(String token) {
+        try {
+            DecodedJWT jwt = decodeToken(token);
+            return jwt.getClaim("createdAt").asString();
+        } catch (Exception e) {
+            logger.warn("从 Token 中获取创建时间失败: {}", e.getMessage());
+            return null;
+        }
     }
 
     /**

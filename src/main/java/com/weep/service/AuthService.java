@@ -9,7 +9,14 @@ import com.weep.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 认证服务类
@@ -24,7 +31,7 @@ import org.springframework.stereotype.Service;
  * @version 3.0
  */
 @Service
-public class AuthService {
+public class AuthService implements UserDetailsService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
 
@@ -84,8 +91,8 @@ public class AuthService {
         
         logger.info("用户 {} 的角色: {}, 权限: {}", username, roles, permissions);
 
-        // 生成包含角色和权限的 JWT Token
-        String token = jwtUtil.generateTokenWithRoles(username, roles, permissions);
+        // 生成包含完整用户信息、角色和权限的 JWT Token
+        String token = jwtUtil.generateTokenWithUserDetails(user, roles, permissions);
 
         logger.info("用户登录成功 - {}", username);
         return LoginResponse.success(token, username);
@@ -161,5 +168,61 @@ public class AuthService {
         }
 
         return false;
+    }
+
+    /**
+     * 根据用户名加载用户详情
+     * <p>
+     * 该方法由 Spring Security 调用，用于在认证过程中加载用户信息。
+     * 会查询用户的角色和权限，并构建包含授权信息的 UserDetails 对象。
+     * </p>
+     *
+     * @param username 用户名
+     * @return UserDetails 对象，包含用户信息和授权信息
+     * @throws UsernameNotFoundException 当用户不存在时抛出
+     */
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        logger.debug("加载用户详情 - 用户名: {}", username);
+        
+        // 从数据库查询用户信息
+        User user = userService.findByUsername(username);
+        
+        if (user == null) {
+            logger.warn("用户不存在 - 用户名: {}", username);
+            throw new UsernameNotFoundException("用户不存在: " + username);
+        }
+        
+        // 检查用户状态
+        if (user.getStatus() != null && user.getStatus() == 0) {
+            logger.warn("用户已被禁用 - 用户名: {}", username);
+            throw new UsernameNotFoundException("用户已被禁用: " + username);
+        }
+        
+        // 查询用户的角色和权限
+        List<String> roles = roleMapper.findRoleCodesByUsername(username);
+        List<String> permissions = permissionMapper.findPermissionCodesByUsername(username);
+        
+        logger.debug("用户 {} 的角色: {}, 权限: {}", username, roles, permissions);
+        
+        // 构建授权列表（角色和权限都作为授权信息）
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        
+        // 添加角色（以 ROLE_ 前缀标识）
+        if (roles != null) {
+            roles.forEach(role -> authorities.add(new SimpleGrantedAuthority("ROLE_" + role)));
+        }
+        
+        // 添加权限
+        if (permissions != null) {
+            permissions.forEach(permission -> authorities.add(new SimpleGrantedAuthority(permission)));
+        }
+        
+        // 返回 Spring Security 的 UserDetails 对象
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                authorities
+        );
     }
 }

@@ -370,4 +370,39 @@ public class UserService {
             return false;
         }
     }
+
+    /**
+     * 根据用户名删除用户
+     *
+     * @param username 用户名
+     * @return 删除成功返回 true，失败返回 false
+     */
+    public boolean deleteByUsername(String username) {
+        try {
+            if (username == null || username.isEmpty()) {
+                logger.warn("删除用户失败：用户名为空");
+                return false;
+            }
+
+            // 检查用户是否存在
+            User existingUser = userMapper.findByUsername(username);
+            if (existingUser == null) {
+                logger.warn("删除用户失败：用户不存在 - 用户名: {}", username);
+                return false;
+            }
+
+            int result = userMapper.deleteById(existingUser.getId());
+            
+            if (result > 0) {
+                logger.info("用户删除成功 - 用户名: {}", username);
+                return true;
+            } else {
+                logger.warn("用户删除失败 - 用户名: {}", username);
+                return false;
+            }
+        } catch (Exception e) {
+            logger.error("用户删除异常 - 用户名: {}, 错误: {}", username, e.getMessage());
+            return false;
+        }
+    }
 }
