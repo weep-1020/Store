@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weep.mapper.ProductsMapper">
+
+    <resultMap id="ProductsResultMap" type="com.weep.entity.Products">
+        <id property="spid" column="spid"/>
+        <result property="p_name" column="p_name"/>
+        <result property="pic" column="pic"/>
+        <result property="price" column="price"/>
+        <result property="description" column="description"/>
+        <result property="stock" column="stock"/>
+        <result property="category_id" column="category_id"/>
+        <result property="status" column="status"/>
+        <result property="created_at" column="created_at"/>
+        <result property="updated_at" column="updated_at"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        spid, p_name, pic, price, description, stock, category_id, status, created_at, updated_at
+    </sql>
+
+    <select id="findBySpid" resultMap="ProductsResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM products
+        WHERE spid = #{spid}
+    </select>
+
+    <select id="findByPName" resultMap="ProductsResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM products
+        WHERE p_name = #{p_name}
+    </select>
+
+    <select id="findAll" resultMap="ProductsResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM products
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByCategoryId" resultMap="ProductsResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM products
+        WHERE category_id = #{category_id}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByStatus" resultMap="ProductsResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM products
+        WHERE status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <insert id="insert" parameterType="com.weep.entity.Products">
+        INSERT INTO products (
+            spid,
+            p_name,
+            pic,
+            price,
+            description,
+            stock,
+            category_id,
+            status,
+            created_at,
+            updated_at
+        ) VALUES (
+            #{spid},
+            #{p_name},
+            #{pic},
+            #{price},
+            #{description},
+            #{stock},
+            #{category_id},
+            #{status},
+            #{created_at},
+            #{updated_at}
+        )
+    </insert>
+
+    <update id="update" parameterType="com.weep.entity.Products">
+        UPDATE products
+        <set>
+            <if test="p_name != null">
+                p_name = #{p_name},
+            </if>
+            <if test="pic != null">
+                pic = #{pic},
+            </if>
+            <if test="price != null">
+                price = #{price},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+            <if test="stock != null">
+                stock = #{stock},
+            </if>
+            <if test="category_id != null">
+                category_id = #{category_id},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="updated_at != null">
+                updated_at = #{updated_at},
+            </if>
+        </set>
+        WHERE spid = #{spid}
+    </update>
+
+    <delete id="deleteBySpid">
+        DELETE FROM products
+        WHERE spid = #{spid}
+    </delete>
+
+    <update id="updateStatus">
+        UPDATE products
+        SET status = #{status}, updated_at = NOW()
+        WHERE spid = #{spid}
+    </update>
+
+    <update id="updateStock">
+        UPDATE products
+        SET stock = #{stock}, updated_at = NOW()
+        WHERE spid = #{spid}
+    </update>
+
+    <update id="decreaseStockAtomic">
+        UPDATE products
+        SET stock = stock - #{quantity}, updated_at = NOW()
+        WHERE spid = #{spid} AND stock >= #{quantity}
+    </update>
+
+    <select id="search" resultMap="ProductsResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM products
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND p_name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="category_id != null and category_id != ''">
+                AND category_id = #{category_id}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+        ORDER BY
+        <choose>
+            <when test="sort_by == 'price'">price</when>
+            <when test="sort_by == 'stock'">stock</when>
+            <when test="sort_by == 'p_name'">p_name</when>
+            <when test="sort_by == 'updated_at'">updated_at</when>
+            <otherwise>created_at</otherwise>
+        </choose>
+        <choose>
+            <when test="sort_order != null and sort_order.toUpperCase() == 'ASC'">ASC</when>
+            <otherwise>DESC</otherwise>
+        </choose>
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <select id="countSearch" resultType="long">
+        SELECT COUNT(*)
+        FROM products
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND p_name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+            <if test="category_id != null and category_id != ''">
+                AND category_id = #{category_id}
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+        </where>
+    </select>
+
+</mapper>

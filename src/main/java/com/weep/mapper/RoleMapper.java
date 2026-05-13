@@ -1,35 +1,27 @@
 package com.weep.mapper;
 
+import com.weep.entity.Role;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-/**
- * 角色 Mapper 接口
- * <p>
- * 提供用户角色的查询操作
- * </p>
- *
- * @author Store Team
- * @version 1.0
- */
 @Mapper
 public interface RoleMapper {
 
-    /**
-     * 根据用户ID查询角色代码列表
-     *
-     * @param userId 用户ID
-     * @return 角色代码列表（如：SUPER_ADMIN, MERCHANT, USER）
-     */
     List<String> findRoleCodesByUserId(@Param("userId") Long userId);
-
-    /**
-     * 根据用户名查询角色代码列表
-     *
-     * @param username 用户名
-     * @return 角色代码列表
-     */
     List<String> findRoleCodesByUsername(@Param("username") String username);
+    List<String> findRoleCodesByPhone(@Param("phone") String phone);
+
+    List<Role> findAll();
+    Role findById(@Param("id") Long id);
+    Role findByRoleCode(@Param("roleCode") String roleCode);
+    int insert(Role role);
+    int update(Role role);
+    int deleteById(@Param("id") Long id);
+
+    int insertUserRole(@Param("userId") Long userId, @Param("roleId") Long roleId);
+    int deleteUserRoles(@Param("userId") Long userId);
+    List<Long> findRoleIdsByUserId(@Param("userId") Long userId);
+    int deleteUserRole(@Param("userId") Long userId, @Param("roleId") Long roleId);
 }

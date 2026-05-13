@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.weep.mapper.AddressMapper">
+
+    <resultMap id="BaseResultMap" type="com.weep.entity.Address">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="receiver_name" property="receiverName" />
+        <result column="receiver_phone" property="receiverPhone" />
+        <result column="province" property="province" />
+        <result column="city" property="city" />
+        <result column="district" property="district" />
+        <result column="detail_address" property="detailAddress" />
+        <result column="is_default" property="isDefault" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+
+    <sql id="BaseColumnList">
+        id, user_id, receiver_name, receiver_phone, province, city,
+        district, detail_address, is_default, created_at, updated_at
+    </sql>
+
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumnList" />
+        FROM addresses
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumnList" />
+        FROM addresses
+        WHERE user_id = #{userId}
+        ORDER BY is_default DESC, created_at DESC
+    </select>
+
+    <select id="findDefaultByUserId" resultMap="BaseResultMap">
+        SELECT <include refid="BaseColumnList" />
+        FROM addresses
+        WHERE user_id = #{userId} AND is_default = 1
+        LIMIT 1
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO addresses (
+            user_id, receiver_name, receiver_phone, province, city,
+            district, detail_address, is_default, created_at, updated_at
+        ) VALUES (
+            #{userId}, #{receiverName}, #{receiverPhone}, #{province}, #{city},
+            #{district}, #{detailAddress}, #{isDefault}, NOW(), NOW()
+        )
+    </insert>
+
+    <update id="update">
+        UPDATE addresses SET
+            receiver_name = #{receiverName},
+            receiver_phone = #{receiverPhone},
+            province = #{province},
+            city = #{city},
+            district = #{district},
+            detail_address = #{detailAddress},
+            is_default = #{isDefault},
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM addresses WHERE id = #{id}
+    </delete>
+
+    <update id="cancelDefaultByUserId">
+        UPDATE addresses SET
+            is_default = 0,
+            updated_at = NOW()
+        WHERE user_id = #{userId}
+    </update>
+
+    <update id="setDefaultAddress">
+        UPDATE addresses SET
+            is_default = 1,
+            updated_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+
+</mapper>

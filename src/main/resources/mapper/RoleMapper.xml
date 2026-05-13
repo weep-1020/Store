@@ -2,21 +2,79 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.weep.mapper.RoleMapper">
 
-    <!-- 根据用户ID查询角色代码列表 -->
+    <resultMap id="RoleResultMap" type="com.weep.entity.Role">
+        <id property="id" column="id"/>
+        <result property="roleName" column="role_name"/>
+        <result property="roleCode" column="role_code"/>
+        <result property="description" column="description"/>
+    </resultMap>
+
     <select id="findRoleCodesByUserId" resultType="string">
         SELECT r.role_code
         FROM roles r
-        INNER JOIN user_roles ur ON r.id = ur.role_id
-        WHERE ur.user_id = #{userId}
+        INNER JOIN users u ON u.role_id = r.id
+        WHERE u.id = #{userId}
     </select>
 
-    <!-- 根据用户名查询角色代码列表 -->
     <select id="findRoleCodesByUsername" resultType="string">
         SELECT r.role_code
         FROM roles r
-        INNER JOIN user_roles ur ON r.id = ur.role_id
-        INNER JOIN users u ON ur.user_id = u.id
+        INNER JOIN users u ON u.role_id = r.id
         WHERE u.username = #{username}
     </select>
+
+    <select id="findRoleCodesByPhone" resultType="string">
+        SELECT r.role_code
+        FROM roles r
+        INNER JOIN users u ON u.role_id = r.id
+        WHERE u.phone = #{phone}
+    </select>
+
+    <select id="findAll" resultMap="RoleResultMap">
+        SELECT id, role_name, role_code, description FROM roles ORDER BY id ASC
+    </select>
+
+    <select id="findById" resultMap="RoleResultMap">
+        SELECT id, role_name, role_code, description FROM roles WHERE id = #{id}
+    </select>
+
+    <select id="findByRoleCode" resultMap="RoleResultMap">
+        SELECT id, role_name, role_code, description FROM roles WHERE role_code = #{roleCode}
+    </select>
+
+    <insert id="insert" parameterType="com.weep.entity.Role" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO roles (role_name, role_code, description)
+        VALUES (#{roleName}, #{roleCode}, #{description})
+    </insert>
+
+    <update id="update" parameterType="com.weep.entity.Role">
+        UPDATE roles
+        <set>
+            <if test="roleName != null">role_name = #{roleName},</if>
+            <if test="roleCode != null">role_code = #{roleCode},</if>
+            <if test="description != null">description = #{description},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM roles WHERE id = #{id}
+    </delete>
+
+    <insert id="insertUserRole">
+        INSERT INTO user_roles (user_id, role_id) VALUES (#{userId}, #{roleId})
+    </insert>
+
+    <delete id="deleteUserRoles">
+        DELETE FROM user_roles WHERE user_id = #{userId}
+    </delete>
+
+    <select id="findRoleIdsByUserId" resultType="long">
+        SELECT role_id FROM user_roles WHERE user_id = #{userId}
+    </select>
+
+    <delete id="deleteUserRole">
+        DELETE FROM user_roles WHERE user_id = #{userId} AND role_id = #{roleId}
+    </delete>
 
 </mapper>

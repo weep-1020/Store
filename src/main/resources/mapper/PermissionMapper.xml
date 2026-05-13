@@ -2,25 +2,81 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.weep.mapper.PermissionMapper">
 
-    <!-- 根据用户ID查询权限代码列表 -->
+    <resultMap id="PermissionResultMap" type="com.weep.entity.Permission">
+        <id property="id" column="id"/>
+        <result property="permissionName" column="permission_name"/>
+        <result property="permissionCode" column="permission_code"/>
+        <result property="resourceType" column="resource_type"/>
+    </resultMap>
+
     <select id="findPermissionCodesByUserId" resultType="string">
         SELECT DISTINCT p.permission_code
         FROM permissions p
         INNER JOIN role_permissions rp ON p.id = rp.permission_id
         INNER JOIN roles r ON rp.role_id = r.id
-        INNER JOIN user_roles ur ON r.id = ur.role_id
-        WHERE ur.user_id = #{userId}
+        INNER JOIN users u ON u.role_id = r.id
+        WHERE u.id = #{userId}
     </select>
 
-    <!-- 根据用户名查询权限代码列表 -->
     <select id="findPermissionCodesByUsername" resultType="string">
         SELECT DISTINCT p.permission_code
         FROM permissions p
         INNER JOIN role_permissions rp ON p.id = rp.permission_id
         INNER JOIN roles r ON rp.role_id = r.id
-        INNER JOIN user_roles ur ON r.id = ur.role_id
-        INNER JOIN users u ON ur.user_id = u.id
+        INNER JOIN users u ON u.role_id = r.id
         WHERE u.username = #{username}
+    </select>
+
+    <select id="findPermissionCodesByPhone" resultType="string">
+        SELECT DISTINCT p.permission_code
+        FROM permissions p
+        INNER JOIN role_permissions rp ON p.id = rp.permission_id
+        INNER JOIN roles r ON rp.role_id = r.id
+        INNER JOIN users u ON u.role_id = r.id
+        WHERE u.phone = #{phone}
+    </select>
+
+    <select id="findAll" resultMap="PermissionResultMap">
+        SELECT id, permission_name, permission_code, resource_type FROM permissions ORDER BY id ASC
+    </select>
+
+    <select id="findById" resultMap="PermissionResultMap">
+        SELECT id, permission_name, permission_code, resource_type FROM permissions WHERE id = #{id}
+    </select>
+
+    <select id="findByPermissionCode" resultMap="PermissionResultMap">
+        SELECT id, permission_name, permission_code, resource_type FROM permissions WHERE permission_code = #{permissionCode}
+    </select>
+
+    <insert id="insert" parameterType="com.weep.entity.Permission" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO permissions (permission_name, permission_code, resource_type)
+        VALUES (#{permissionName}, #{permissionCode}, #{resourceType})
+    </insert>
+
+    <update id="update" parameterType="com.weep.entity.Permission">
+        UPDATE permissions
+        <set>
+            <if test="permissionName != null">permission_name = #{permissionName},</if>
+            <if test="permissionCode != null">permission_code = #{permissionCode},</if>
+            <if test="resourceType != null">resource_type = #{resourceType},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM permissions WHERE id = #{id}
+    </delete>
+
+    <insert id="insertRolePermission">
+        INSERT INTO role_permissions (role_id, permission_id) VALUES (#{roleId}, #{permissionId})
+    </insert>
+
+    <delete id="deleteRolePermissions">
+        DELETE FROM role_permissions WHERE role_id = #{roleId}
+    </delete>
+
+    <select id="findPermissionIdsByRoleId" resultType="long">
+        SELECT permission_id FROM role_permissions WHERE role_id = #{roleId}
     </select>
 
 </mapper>

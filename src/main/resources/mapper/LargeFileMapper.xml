@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.weep.mapper.LargeFileMapper">
+
+    <insert id="add" parameterType="com.weep.entity.LargeFile">
+        INSERT INTO large_files (pic, filename, file_path, file_size, content_type)
+        VALUES (#{pic}, #{filename}, #{filePath}, #{fileSize}, #{contentType})
+    </insert>
+
+    <select id="findByPic" resultType="com.weep.entity.LargeFile">
+        SELECT pic, filename, file_path AS filePath, file_size AS fileSize, content_type AS contentType
+        FROM large_files
+        WHERE pic = #{pic}
+    </select>
+
+    <delete id="deleteByPic">
+        DELETE FROM large_files WHERE pic = #{pic}
+    </delete>
+
+</mapper>

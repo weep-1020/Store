@@ -1,165 +1,51 @@
 package com.weep.service;
 
-import com.weep.dto.LoginRequest;
-import com.weep.dto.LoginResponse;
-import com.weep.entity.User;
-import com.weep.mapper.PermissionMapper;
-import com.weep.mapper.RoleMapper;
-import com.weep.util.JwtUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import java.util.Map;
 
 /**
- * 认证服务类
- * <p>
- * 提供用户认证相关的业务逻辑，包括：
- * - 用户登录验证
- * - JWT Token 生成和验证
- * - 用户信息管理
- * </p>
+ * 认证服务接口
  *
- * @author Store Team
- * @version 3.0
+ * <p>提供用户认证相关的核心功能，包括登录、登出、Token验证等。
+ * 基于JWT实现无状态认证，并通过Redis维护Token白名单。
  */
-@Service
-public class AuthService {
-
-    private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
+public interface AuthService {
 
     /**
-     * JWT 工具类
-     */
-    @Autowired
-    private JwtUtil jwtUtil;
-
-    /**
-     * 用户服务类
-     */
-    @Autowired
-    private UserService userService;
-
-    /**
-     * 角色 Mapper
-     */
-    @Autowired
-    private RoleMapper roleMapper;
-
-    /**
-     * 权限 Mapper
-     */
-    @Autowired
-    private PermissionMapper permissionMapper;
-
-    /**
-     * 用户登录
-     * <p>
-     * 验证用户名和密码，如果验证成功则生成并返回 Token
-     * </p>
+     * 用户登录（使用手机号 + 密码）
      *
-     * @param loginRequest 登录请求对象，包含用户名和密码
-     * @return 登录响应对象，包含 Token 和用户信息
+     * @param phone 手机号
+     * @param password 密码（明文）
+     * @return JWT Token，如果登录失败返回 null
      */
-    public LoginResponse login(LoginRequest loginRequest) {
-        String username = loginRequest.getUsername();
-        String password = loginRequest.getPassword();
-
-        // 参数验证
-        if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
-            logger.warn("登录失败：用户名或密码为空");
-            return LoginResponse.fail("用户名和密码不能为空");
-        }
-
-        // 通过 UserService 验证用户登录
-        User user = userService.login(username, password);
-        
-        if (user == null) {
-            return LoginResponse.fail("用户名或密码错误");
-        }
-
-        // 查询用户的角色和权限
-        java.util.List<String> roles = roleMapper.findRoleCodesByUsername(username);
-        java.util.List<String> permissions = permissionMapper.findPermissionCodesByUsername(username);
-        
-        logger.info("用户 {} 的角色: {}, 权限: {}", username, roles, permissions);
-
-        // 生成包含角色和权限的 JWT Token
-        String token = jwtUtil.generateTokenWithRoles(username, roles, permissions);
-
-        logger.info("用户登录成功 - {}", username);
-        return LoginResponse.success(token, username);
-    }
+    String login(String phone, String password);
 
     /**
-     * 验证 JWT Token 是否有效
+     * 用户登录并返回完整用户信息（通过手机号或用户名）
      *
-     * @param token 待验证的 Token
-     * @return 如果 Token 有效返回 true，否则返回 false
+     * @param identifier 手机号或用户名
+     * @param password 密码（明文）
+     * @return 包含 Token、用户名、权限列表和 userInfo 的 Map
      */
-    public boolean validateToken(String token) {
-        if (token == null || token.isEmpty()) {
-            return false;
-        }
-
-        // 去除 Bearer 前缀
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-
-        return jwtUtil.validateToken(token);
-    }
-
-    /**
-     * 根据 JWT Token 获取用户名
-     *
-     * @param token 认证 Token
-     * @return 用户名，如果 Token 无效则返回 null
-     */
-    public String getUsernameByToken(String token) {
-        if (token == null || token.isEmpty()) {
-            return null;
-        }
-
-        // 去除 Bearer 前缀
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-
-        try {
-            return jwtUtil.getUsernameFromToken(token);
-        } catch (Exception e) {
-            logger.warn("从 Token 获取用户名失败: {}", e.getMessage());
-            return null;
-        }
-    }
+    Map<String, Object> loginWithUserInfo(String identifier, String password);
 
     /**
      * 用户登出
-     * <p>
-     * JWT 是无状态的，客户端删除 Token 即可
-     * </p>
      *
-     * @param token 要失效的 Token
-     * @return 始终返回 true（JWT 无状态特性）
+     * <p>从Redis中移除该用户的Token，使其失效。
+     *
+     * @param phone 手机号
+     * @return 登出成功返回 true
      */
-    public boolean logout(String token) {
-        if (token == null || token.isEmpty()) {
-            return false;
-        }
+    boolean logout(String phone);
 
-        // 去除 Bearer 前缀
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-        }
-
-        // 验证 Token 是否有效
-        if (jwtUtil.validateToken(token)) {
-            String username = jwtUtil.getUsernameFromToken(token);
-            logger.info("用户登出成功 - {}", username);
-            return true;
-        }
-
-        return false;
-    }
+    /**
+     * 验证 Token 是否在 Redis 中存在
+     *
+     * <p>用于验证Token是否有效（未过期且未被注销）。
+     *
+     * @param phone 手机号
+     * @param token JWT Token
+     * @return Token 存在返回 true
+     */
+    boolean validateTokenInRedis(String phone, String token);
 }

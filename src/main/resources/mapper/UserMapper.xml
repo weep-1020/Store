@@ -9,13 +9,17 @@
         <result property="password" column="password"/>
         <result property="email" column="email"/>
         <result property="phone" column="phone"/>
+        <result property="pic" column="pic"/>
         <result property="status" column="status"/>
+        <result property="roleId" column="role_id"/>
         <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="lastLoginAt" column="last_login_at"/>
     </resultMap>
 
     <!-- 通用查询列 -->
     <sql id="Base_Column_List">
-        id, username, password, email, phone, status, created_at
+        id, username, password, email, phone, pic, status, role_id, created_at, updated_at, last_login_at
     </sql>
 
     <!-- 根据用户名查询用户 -->
@@ -65,15 +69,21 @@
             password,
             email,
             phone,
+            pic,
             status,
-            created_at
+            role_id,
+            created_at,
+            updated_at
         ) VALUES (
             #{username},
             #{password},
             #{email},
             #{phone},
+            #{pic},
             #{status},
-            #{createdAt}
+            #{roleId},
+            #{createdAt},
+            #{updatedAt}
         )
     </insert>
 
@@ -93,9 +103,16 @@
             <if test="phone != null">
                 phone = #{phone},
             </if>
+            <if test="pic != null and pic != ''">
+                pic = #{pic},
+            </if>
             <if test="status != null">
                 status = #{status},
             </if>
+            <if test="roleId != null">
+                role_id = #{roleId},
+            </if>
+            updated_at = NOW(),
         </set>
         WHERE id = #{id}
     </update>
@@ -109,8 +126,70 @@
     <!-- 更新用户状态 -->
     <update id="updateStatus">
         UPDATE users
-        SET status = #{status}
+        SET status = #{status}, updated_at = NOW()
         WHERE id = #{id}
     </update>
+
+    <!-- 分页查询用户总数 -->
+    <select id="count" resultType="long">
+        SELECT COUNT(*)
+        FROM users
+        <where>
+            <if test="keyword != null and keyword != ''">
+                username LIKE CONCAT('%', #{keyword}, '%')
+                OR email LIKE CONCAT('%', #{keyword}, '%')
+                OR phone LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 分页查询用户列表 -->
+    <select id="findByPage" resultMap="UserResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM users
+        <where>
+            <if test="keyword != null and keyword != ''">
+                username LIKE CONCAT('%', #{keyword}, '%')
+                OR email LIKE CONCAT('%', #{keyword}, '%')
+                OR phone LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 更新用户最后登录时间 -->
+    <update id="updateLastLoginAt">
+        UPDATE users
+        SET last_login_at = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 按状态统计用户数 -->
+    <select id="countByStatus" resultType="long">
+        SELECT COUNT(*) FROM users WHERE status = #{status}
+    </select>
+
+    <!-- 按状态统计订单数 -->
+    <select id="countOrders" resultType="long">
+        SELECT COUNT(*) FROM orders
+        <where>
+            <if test="status != null">status = #{status}</if>
+        </where>
+    </select>
+
+    <!-- 按状态统计商品数 -->
+    <select id="countProducts" resultType="long">
+        SELECT COUNT(*) FROM products
+        <where>
+            <if test="status != null">status = #{status}</if>
+        </where>
+    </select>
+
+    <!-- 按角色ID统计用户数 -->
+    <select id="countByRoleId" resultType="long">
+        SELECT COUNT(*) FROM users WHERE role_id = #{roleId}
+    </select>
 
 </mapper>

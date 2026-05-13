@@ -40,9 +40,19 @@ public class User {
     private String phone;
 
     /**
+     * 用户头像图片ID（存储图片路径或ID）
+     */
+    private String pic;
+
+    /**
      * 用户状态（1-启用，0-禁用）
      */
     private Integer status;
+
+    /**
+     * 角色ID（FK -> roles.id）
+     */
+    private Long roleId;
 
     /**
      * 创建时间
@@ -53,6 +63,16 @@ public class User {
      * 用户角色列表（非数据库字段）
      */
     private List<String> roles;
+
+    /**
+     * 更新时间
+     */
+    private LocalDateTime updatedAt;
+
+    /**
+     * 最后登录时间
+     */
+    private LocalDateTime lastLoginAt;
 
     /**
      * 用户权限列表（非数据库字段）
@@ -84,6 +104,22 @@ public class User {
         this.phone = phone;
         this.status = status;
         this.createdAt = createdAt;
+    }
+
+    public User(Long id, String username, String password,
+                String email, String phone, String pic,
+                Integer status, LocalDateTime createdAt, List<String> roles,
+                List<String> permissions) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.phone = phone;
+        this.pic = pic;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.roles = roles;
+        this.permissions = permissions;
     }
 
     public Long getId() {
@@ -134,6 +170,14 @@ public class User {
         this.status = status;
     }
 
+    public Long getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(Long roleId) {
+        this.roleId = roleId;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -158,15 +202,54 @@ public class User {
         this.permissions = permissions;
     }
 
+    /**
+     * 获取用户头像图片ID
+     * @return 图片ID或路径
+     */
+    public String getPic() {
+        return pic;
+    }
+
+    /**
+     * 设置用户头像图片ID
+     * @param pic 图片ID或路径
+     */
+    public void setPic(String pic) {
+        this.pic = pic;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(LocalDateTime lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
                 ", username='" + username + '\'' +
+                ", password='***'" +
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
+                ", pic=" + pic +
                 ", status=" + status +
+                ", roleId=" + roleId +
                 ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", lastLoginAt=" + lastLoginAt +
+                ", roles=" + roles +
+                ", permissions=" + permissions +
                 '}';
     }
 }

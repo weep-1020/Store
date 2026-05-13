@@ -89,4 +89,35 @@ public interface UserMapper {
      * @return 影响的行数
      */
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    /**
+     * 分页查询用户总数
+     *
+     * @param keyword 搜索关键词（用户名/邮箱/手机号）
+     * @return 用户总数
+     */
+    long count(@Param("keyword") String keyword);
+
+    /**
+     * 分页查询用户列表
+     *
+     * @param keyword 搜索关键词
+     * @param offset  偏移量
+     * @param limit   每页数量
+     * @return 用户列表
+     */
+    List<User> findByPage(@Param("keyword") String keyword, @Param("offset") int offset, @Param("limit") int limit);
+
+    /**
+     * 更新用户最后登录时间
+     *
+     * @param id 用户ID
+     * @return 影响的行数
+     */
+    int updateLastLoginAt(@Param("id") Long id);
+
+    long countByStatus(@Param("status") Integer status);
+    long countOrders(@Param("status") Integer status);
+    long countProducts(@Param("status") Integer status);
+    long countByRoleId(@Param("roleId") Long roleId);
 }
